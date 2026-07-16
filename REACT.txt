@@ -1,0 +1,917 @@
+import React, { useState, useMemo } from "react";
+import {
+  Heart, Menu, X, Bell, Clock, User, FileText, Search as SearchIcon,
+  ChevronLeft, ChevronRight, Eye, EyeOff, Filter, Camera, LogOut, Plus,
+  Brain, Wind, Droplet, Droplets, Dna, Phone, Mail, Award, Hospital,
+  CheckCircle2, TimerReset, ArrowUpRight
+} from "lucide-react";
+
+const BRAND = "#BC1C23";
+const BRAND_DARK = "#8B0000";
+
+/* ---------------------------------- Mock Data ---------------------------------- */
+
+const INITIAL_DONOR = {
+  name: "Priya R.",
+  donor_id: "DNR-2024-0512",
+  email: "priya.r@example.com",
+  mobile: "+91 98765 43210",
+  total_donations: 12,
+  total_amount: 45800,
+  donation_points: 1250,
+  member_tier: "Diamond Member",
+};
+
+const TIERS = [
+  { name: "Bronze Friend", min: 0 },
+  { name: "Silver Supporter", min: 250 },
+  { name: "Gold Guardian", min: 750 },
+  { name: "Diamond Member", min: 1250 },
+  { name: "Platinum Hero", min: 5000 },
+];
+
+const DONATIONS = [
+  { id: "TXN-88213", recipient_name: "Aarav Mehta", diagnosis: "Congenital Heart Disease", hospital: "Sunrise Children's Hospital", date: "12 Jul 2026", amount: 5000, status: "successful" },
+  { id: "TXN-88190", recipient_name: "Meera Iyer", diagnosis: "Thalassemia", hospital: "Apex Care Hospital", date: "05 Jul 2026", amount: 2500, status: "successful" },
+  { id: "TXN-88104", recipient_name: "Kabir Shah", diagnosis: "Leukemia", hospital: "St. Anne's Medical Centre", date: "28 Jun 2026", amount: 10000, status: "successful" },
+  { id: "TXN-87990", recipient_name: "Ira Nair", diagnosis: "Kidney Disease", hospital: "Lotus Multispeciality", date: "19 Jun 2026", amount: 3000, status: "pending" },
+  { id: "TXN-87844", recipient_name: "Vihaan Rao", diagnosis: "Brain Tumor", hospital: "Sunrise Children's Hospital", date: "02 Jun 2026", amount: 15000, status: "successful" },
+  { id: "TXN-87710", recipient_name: "Ananya Das", diagnosis: "Lung Disease", hospital: "Hope Valley Hospital", date: "21 May 2026", amount: 1800, status: "pending" },
+];
+
+const CATEGORY_META = {
+  heart: { label: "Heart Disease" },
+  cancer: { label: "Cancer" },
+  kidney: { label: "Kidney" },
+  liver: { label: "Liver" },
+  brain: { label: "Brain Tumor" },
+  lung: { label: "Lung" },
+  blood: { label: "Blood" },
+  eye: { label: "Eye" },
+};
+
+const INITIAL_CASES = [
+  { id: "C-101", child_name: "Aarav Mehta", diagnosis: "Congenital Heart Disease", hospital: "Sunrise Children's Hospital", goal_amount: 350000, raised_amount: 214000, days_left: 18, category: "heart" },
+  { id: "C-102", child_name: "Meera Iyer", diagnosis: "Thalassemia", hospital: "Apex Care Hospital", goal_amount: 120000, raised_amount: 96000, days_left: 9, category: "blood" },
+  { id: "C-103", child_name: "Kabir Shah", diagnosis: "Leukemia", hospital: "St. Anne's Medical Centre", goal_amount: 480000, raised_amount: 152000, days_left: 34, category: "cancer" },
+  { id: "C-104", child_name: "Ira Nair", diagnosis: "Kidney Disease", hospital: "Lotus Multispeciality", goal_amount: 260000, raised_amount: 61000, days_left: 22, category: "kidney" },
+  { id: "C-105", child_name: "Vihaan Rao", diagnosis: "Brain Tumor", hospital: "Sunrise Children's Hospital", goal_amount: 610000, raised_amount: 480000, days_left: 6, category: "brain" },
+  { id: "C-106", child_name: "Ananya Das", diagnosis: "Lung Disease", hospital: "Hope Valley Hospital", goal_amount: 190000, raised_amount: 40000, days_left: 41, category: "lung" },
+  { id: "C-107", child_name: "Reyansh Gupta", diagnosis: "Liver Cirrhosis", hospital: "Apex Care Hospital", goal_amount: 300000, raised_amount: 118000, days_left: 15, category: "liver" },
+  { id: "C-108", child_name: "Diya Kulkarni", diagnosis: "Retinoblastoma (Eye Tumor)", hospital: "Hope Valley Hospital", goal_amount: 150000, raised_amount: 133000, days_left: 4, category: "eye" },
+  { id: "C-109", child_name: "Arjun Verma", diagnosis: "Acute Lymphoblastic Leukemia", hospital: "St. Anne's Medical Centre", goal_amount: 420000, raised_amount: 90000, days_left: 27, category: "cancer" },
+];
+
+const POPULAR_DISEASES = [
+  { key: "heart", label: "Congenital Heart Disease", icon: Heart, tint: "bg-red-50 text-red-600" },
+  { key: "blood2", label: "Thalassemia", icon: Droplet, tint: "bg-rose-50 text-rose-600" },
+  { key: "cancer", label: "Leukemia", icon: Dna, tint: "bg-violet-50 text-violet-600" },
+  { key: "kidney", label: "Kidney Disease", icon: Filter, tint: "bg-blue-50 text-blue-600" },
+  { key: "liver", label: "Liver Disease", icon: TimerReset, tint: "bg-amber-50 text-amber-600" },
+  { key: "brain", label: "Brain Tumor", icon: Brain, tint: "bg-purple-50 text-purple-600" },
+  { key: "lung", label: "Lung Disease", icon: Wind, tint: "bg-cyan-50 text-cyan-600" },
+  { key: "blood", label: "Blood Disorders", icon: Droplets, tint: "bg-pink-50 text-pink-600" },
+  { key: "eye", label: "Eye Disorders", icon: Eye, tint: "bg-green-50 text-green-600" },
+];
+
+const fmtINR = (n) => "₹" + n.toLocaleString("en-IN");
+
+/* ---------------------------------- Small UI bits ---------------------------------- */
+
+function BackHeader({ title, onBack, right }) {
+  return (
+    <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-white sticky top-0 z-20">
+      <button onClick={onBack} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-100 transition" aria-label="Back">
+        <ChevronLeft size={20} className="text-gray-700" />
+      </button>
+      <h1 className="font-semibold text-gray-900 text-[15px]" style={{ fontFamily: "Poppins, sans-serif" }}>{title}</h1>
+      <div className="w-9 h-9 flex items-center justify-center">{right}</div>
+    </div>
+  );
+}
+
+function StatusBadge({ status }) {
+  const ok = status === "successful";
+  return (
+    <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${ok ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
+      {ok ? "Successful" : "Pending"}
+    </span>
+  );
+}
+
+function ProgressBar({ raised, goal }) {
+  const pct = Math.min(100, Math.round((raised / goal) * 100));
+  return (
+    <div>
+      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: BRAND }} />
+      </div>
+      <div className="flex justify-between mt-1.5 text-[11px] text-gray-500">
+        <span className="font-medium text-gray-700">{fmtINR(raised)} raised</span>
+        <span>of {fmtINR(goal)}</span>
+      </div>
+    </div>
+  );
+}
+
+function Avatar({ name, size = 44, tint = "bg-red-100 text-red-700" }) {
+  const initials = name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  return (
+    <div className={`rounded-full flex items-center justify-center font-semibold shrink-0 ${tint}`} style={{ width: size, height: size, fontSize: size * 0.36 }}>
+      {initials}
+    </div>
+  );
+}
+
+function EKGLine() {
+  return (
+    <svg viewBox="0 0 400 40" className="w-full h-8 opacity-70" preserveAspectRatio="none">
+      <polyline
+        points="0,20 40,20 55,20 65,4 75,36 85,20 100,20 140,20 155,20 165,4 175,36 185,20 200,20 240,20 255,20 265,4 275,36 285,20 300,20 340,20 355,20 365,4 375,36 385,20 400,20"
+        fill="none" stroke="white" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function CaseCard({ c, onDonate }) {
+  return (
+    <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+      <div className="flex gap-3">
+        <Avatar name={c.child_name} tint="bg-red-50 text-red-600" />
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-gray-900 text-sm truncate" style={{ fontFamily: "Poppins, sans-serif" }}>{c.child_name}</p>
+          <p className="text-xs text-gray-500 truncate">{c.diagnosis}</p>
+          <p className="text-xs text-gray-400 truncate flex items-center gap-1 mt-0.5"><Hospital size={11} />{c.hospital}</p>
+        </div>
+        <span className="text-[11px] text-gray-400 whitespace-nowrap">{c.days_left}d left</span>
+      </div>
+      <div className="mt-3"><ProgressBar raised={c.raised_amount} goal={c.goal_amount} /></div>
+      {onDonate && (
+        <button
+          onClick={() => onDonate(c)}
+          className="mt-3 w-full text-white text-sm font-medium py-2 rounded-xl transition active:scale-[0.98]"
+          style={{ backgroundColor: BRAND }}
+        >
+          Donate Now
+        </button>
+      )}
+    </div>
+  );
+}
+
+function NavDrawer({ open, onClose, onNavigate, onLogout, role }) {
+  const items = role === "hospital"
+    ? [{ key: "hospitalDashboard", label: "Dashboard", icon: Hospital }]
+    : [
+        { key: "donorDashboard", label: "Home", icon: Heart },
+        { key: "history", label: "Donation History", icon: Clock },
+        { key: "profile", label: "Profile", icon: User },
+        { key: "cases", label: "Cases", icon: FileText },
+        { key: "search", label: "Search", icon: SearchIcon },
+      ];
+  return (
+    <>
+      <div className={`fixed inset-0 bg-black/40 z-40 transition-opacity ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`} onClick={onClose} />
+      <div className={`fixed top-0 left-0 h-full w-72 bg-white z-50 shadow-2xl transition-transform duration-300 ${open ? "translate-x-0" : "-translate-x-full"}`}>
+        <div className="p-5 text-white flex items-center justify-between" style={{ background: `linear-gradient(135deg, ${BRAND}, ${BRAND_DARK})` }}>
+          <div className="flex items-center gap-2">
+            <Heart size={22} fill="white" className="text-white" />
+            <span className="font-semibold" style={{ fontFamily: "Poppins, sans-serif" }}>ChildLife</span>
+          </div>
+          <button onClick={onClose}><X size={20} /></button>
+        </div>
+        <div className="p-3">
+          {items.map((it) => (
+            <button
+              key={it.key}
+              onClick={() => { onNavigate(it.key); onClose(); }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 text-gray-700 transition text-sm font-medium"
+            >
+              <it.icon size={18} style={{ color: BRAND }} />
+              {it.label}
+            </button>
+          ))}
+          <div className="h-px bg-gray-100 my-2" />
+          <button onClick={onLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 text-gray-500 transition text-sm font-medium">
+            <LogOut size={18} />
+            Logout
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function Toast({ message, show }) {
+  return (
+    <div className={`fixed left-1/2 -translate-x-1/2 bottom-6 z-[60] transition-all duration-300 ${show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"}`}>
+      <div className="flex items-center gap-2 text-white text-sm font-medium px-4 py-3 rounded-xl shadow-xl" style={{ backgroundColor: "#166534" }}>
+        <CheckCircle2 size={18} />
+        {message}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------------- Pages ---------------------------------- */
+
+function LoginPage({ onDonorLogin, onHospitalLogin, onGoRegister }) {
+  const [tab, setTab] = useState("donor");
+  const [showPw, setShowPw] = useState(false);
+  const [donor, setDonor] = useState({ id: "", password: "" });
+  const [hospital, setHospital] = useState({ name: "", password: "" });
+  const [error, setError] = useState("");
+
+  const submit = (e) => {
+    e.preventDefault();
+    setError("");
+    if (tab === "donor") {
+      if (!donor.id || !donor.password) return setError("Enter your email/phone and password.");
+      onDonorLogin();
+    } else {
+      if (!hospital.name || !hospital.password) return setError("Enter hospital name and password.");
+      onHospitalLogin(hospital.name.trim());
+    }
+  };
+
+  return (
+    <div className="min-h-full flex flex-col relative overflow-hidden" style={{ background: `radial-gradient(120% 100% at 50% 0%, ${BRAND} 0%, ${BRAND_DARK} 70%)` }}>
+      <div className="pt-8 px-6"><EKGLine /></div>
+      <div className="flex flex-col items-center pt-4 pb-8 px-6">
+        <div className="w-16 h-16 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center mb-4 border border-white/20">
+          <Heart size={30} className="text-white" fill="white" />
+        </div>
+        <h1 className="text-white text-2xl font-semibold text-center" style={{ fontFamily: "Poppins, sans-serif" }}>Hope Begins With You</h1>
+        <p className="text-white/70 text-sm mt-1">ChildLife — Save Little Lives</p>
+      </div>
+
+      <div className="flex-1 px-5 pb-8">
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => setTab("donor")}
+            className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition border ${tab === "donor" ? "bg-white/20 border-white/40 text-white" : "bg-white/5 border-white/10 text-white/60"}`}
+          >
+            Donor Login
+          </button>
+          <button
+            onClick={() => setTab("hospital")}
+            className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition border ${tab === "hospital" ? "bg-white/20 border-white/40 text-white" : "bg-white/5 border-white/10 text-white/60"}`}
+          >
+            Hospital Login
+          </button>
+        </div>
+
+        <form onSubmit={submit} className="rounded-2xl p-5 backdrop-blur-md bg-white/10 border border-white/20 shadow-xl">
+          {tab === "donor" ? (
+            <>
+              <label className="block text-white/80 text-xs mb-1.5">Email or Phone</label>
+              <input
+                value={donor.id}
+                onChange={(e) => setDonor({ ...donor, id: e.target.value })}
+                placeholder="you@example.com"
+                className="w-full bg-white/10 border border-white/25 rounded-xl px-3.5 py-2.5 text-white placeholder-white/40 text-sm mb-3 outline-none focus:border-white/60"
+              />
+              <label className="block text-white/80 text-xs mb-1.5">Password</label>
+              <div className="relative mb-2">
+                <input
+                  type={showPw ? "text" : "password"}
+                  value={donor.password}
+                  onChange={(e) => setDonor({ ...donor, password: e.target.value })}
+                  placeholder="••••••••"
+                  className="w-full bg-white/10 border border-white/25 rounded-xl px-3.5 py-2.5 pr-10 text-white placeholder-white/40 text-sm outline-none focus:border-white/60"
+                />
+                <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60">
+                  {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
+                </button>
+              </div>
+              <div className="flex items-center justify-between mb-4">
+                <label className="flex items-center gap-1.5 text-white/70 text-xs">
+                  <input type="checkbox" className="rounded" /> Remember me
+                </label>
+                <button type="button" className="text-white/70 text-xs underline underline-offset-2">Forgot password?</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <label className="block text-white/80 text-xs mb-1.5">Hospital Name</label>
+              <input
+                value={hospital.name}
+                onChange={(e) => setHospital({ ...hospital, name: e.target.value })}
+                placeholder="e.g. Sunrise Children's Hospital"
+                className="w-full bg-white/10 border border-white/25 rounded-xl px-3.5 py-2.5 text-white placeholder-white/40 text-sm mb-3 outline-none focus:border-white/60"
+              />
+              <label className="block text-white/80 text-xs mb-1.5">Password</label>
+              <div className="relative mb-4">
+                <input
+                  type={showPw ? "text" : "password"}
+                  value={hospital.password}
+                  onChange={(e) => setHospital({ ...hospital, password: e.target.value })}
+                  placeholder="••••••••"
+                  className="w-full bg-white/10 border border-white/25 rounded-xl px-3.5 py-2.5 pr-10 text-white placeholder-white/40 text-sm outline-none focus:border-white/60"
+                />
+                <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60">
+                  {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
+                </button>
+              </div>
+            </>
+          )}
+
+          {error && <p className="text-red-100 bg-red-900/30 border border-red-200/20 text-xs rounded-lg px-3 py-2 mb-3">{error}</p>}
+
+          <button type="submit" className="w-full bg-white text-sm font-semibold py-2.5 rounded-xl transition active:scale-[0.98]" style={{ color: BRAND }}>
+            {tab === "donor" ? "Login as Donor" : "Login as Hospital"}
+          </button>
+
+          {tab === "donor" ? (
+            <p className="text-center text-white/70 text-xs mt-4">
+              New Donor?{" "}
+              <button type="button" onClick={onGoRegister} className="text-white font-medium underline underline-offset-2">Register</button>
+            </p>
+          ) : (
+            <p className="text-center text-white/50 text-[11px] mt-4">Authorized Hospitals Only</p>
+          )}
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function DonorRegisterPage({ onBack, onRegistered }) {
+  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
+  const [error, setError] = useState("");
+
+  const submit = (e) => {
+    e.preventDefault();
+    if (!form.name || !form.email || !form.password) return setError("Please fill in all fields.");
+    if (form.password !== form.confirm) return setError("Passwords do not match.");
+    setError("");
+    onRegistered();
+  };
+
+  return (
+    <div className="min-h-full flex flex-col relative" style={{ background: `radial-gradient(120% 100% at 50% 0%, ${BRAND} 0%, ${BRAND_DARK} 70%)` }}>
+      <div className="pt-8 px-6"><EKGLine /></div>
+      <div className="flex flex-col items-center pt-4 pb-6 px-6">
+        <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center mb-3 border border-white/20">
+          <Heart size={26} className="text-white" fill="white" />
+        </div>
+        <h1 className="text-white text-xl font-semibold" style={{ fontFamily: "Poppins, sans-serif" }}>Create Donor Account</h1>
+      </div>
+      <div className="flex-1 px-5 pb-8">
+        <form onSubmit={submit} className="rounded-2xl p-5 backdrop-blur-md bg-white/10 border border-white/20 shadow-xl">
+          {["name", "email", "password", "confirm"].map((field) => (
+            <div key={field} className="mb-3">
+              <label className="block text-white/80 text-xs mb-1.5 capitalize">
+                {field === "confirm" ? "Confirm Password" : field === "name" ? "Full Name" : field}
+              </label>
+              <input
+                type={field.includes("password") || field === "confirm" ? "password" : field === "email" ? "email" : "text"}
+                value={form[field]}
+                onChange={(e) => setForm({ ...form, [field]: e.target.value })}
+                placeholder={field === "name" ? "Your full name" : field === "email" ? "you@example.com" : "••••••••"}
+                className="w-full bg-white/10 border border-white/25 rounded-xl px-3.5 py-2.5 text-white placeholder-white/40 text-sm outline-none focus:border-white/60"
+              />
+            </div>
+          ))}
+          {error && <p className="text-red-100 bg-red-900/30 border border-red-200/20 text-xs rounded-lg px-3 py-2 mb-3">{error}</p>}
+          <button type="submit" className="w-full bg-white text-sm font-semibold py-2.5 rounded-xl mt-1 transition active:scale-[0.98]" style={{ color: BRAND }}>
+            Create Account
+          </button>
+          <button type="button" onClick={onBack} className="w-full text-white/70 text-xs mt-4 text-center">
+            Back to login
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function TopHeader({ onMenu, unread }) {
+  return (
+    <div className="flex items-center justify-between px-5 py-4 bg-white sticky top-0 z-20 border-b border-gray-50">
+      <div className="flex items-center gap-3">
+        <button onClick={onMenu} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-100 transition">
+          <Menu size={20} className="text-gray-700" />
+        </button>
+        <div className="flex items-center gap-2">
+          <Heart size={20} style={{ color: BRAND }} fill={BRAND} />
+          <div className="leading-tight">
+            <p className="font-semibold text-gray-900 text-sm" style={{ fontFamily: "Poppins, sans-serif" }}>ChildLife</p>
+            <p className="text-[10px] text-gray-400 -mt-0.5">Save Little Lives</p>
+          </div>
+        </div>
+      </div>
+      <div className="relative w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-100 transition">
+        <Bell size={19} className="text-gray-600" />
+        {unread && <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-600 border border-white" />}
+      </div>
+    </div>
+  );
+}
+
+function DonorDashboard({ donor, onMenu, onNavigate }) {
+  const cards = [
+    { key: "history", label: "Donate Transaction History", icon: Clock, tint: "bg-red-50", iconColor: "text-red-600" },
+    { key: "profile", label: "Profile", icon: User, tint: "bg-violet-50", iconColor: "text-violet-600", badge: `Points: ${donor.donation_points}` },
+    { key: "cases", label: "Cases", icon: FileText, tint: "bg-green-50", iconColor: "text-green-600" },
+    { key: "search", label: "Search", icon: SearchIcon, tint: "bg-blue-50", iconColor: "text-blue-600" },
+  ];
+  return (
+    <div className="min-h-full bg-gray-50">
+      <TopHeader onMenu={onMenu} unread />
+      <div className="px-5 pt-5">
+        <p className="text-gray-500 text-sm">Welcome Donor!</p>
+        <h2 className="text-xl font-semibold text-gray-900" style={{ fontFamily: "Poppins, sans-serif" }}>
+          <span style={{ color: BRAND }}>Hope</span> Begins With You
+        </h2>
+
+        <div className="mt-4 rounded-2xl p-5 text-white relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${BRAND}, ${BRAND_DARK})` }}>
+          <div className="absolute -right-4 -top-4 opacity-20"><Heart size={120} fill="white" /></div>
+          <div className="mb-3"><EKGLine /></div>
+          <Heart size={34} fill="white" className="text-white mb-3" />
+          <p className="text-[15px] leading-snug" style={{ fontFamily: "'Dancing Script', cursive", fontSize: "22px" }}>
+            “Your little help can bring big smiles.”
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 mt-5 pb-8">
+          {cards.map((c) => (
+            <button
+              key={c.key}
+              onClick={() => onNavigate(c.key)}
+              className={`${c.tint} rounded-2xl p-4 text-left relative shadow-sm hover:shadow-md transition`}
+            >
+              <c.icon size={22} className={c.iconColor} />
+              <p className="text-sm font-medium text-gray-800 mt-3 leading-snug" style={{ fontFamily: "Poppins, sans-serif" }}>{c.label}</p>
+              {c.badge && <p className="text-[11px] text-gray-500 mt-0.5">{c.badge}</p>}
+              <div className="absolute bottom-3 right-3 w-7 h-7 rounded-full bg-white/70 flex items-center justify-center">
+                <ArrowUpRight size={14} className="text-gray-600" />
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HistoryPage({ donor, donations, onBack }) {
+  return (
+    <div className="min-h-full bg-gray-50">
+      <BackHeader title="Donation History" onBack={onBack} right={<Filter size={18} className="text-gray-500" />} />
+      <div className="px-5 pt-4 grid grid-cols-3 gap-2.5">
+        {[
+          { label: "Donations", value: donor.total_donations },
+          { label: "Total (₹)", value: donor.total_amount.toLocaleString("en-IN") },
+          { label: "Points", value: donor.donation_points },
+        ].map((s) => (
+          <div key={s.label} className="rounded-xl p-3 text-white text-center" style={{ background: `linear-gradient(135deg, ${BRAND}, ${BRAND_DARK})` }}>
+            <p className="text-lg font-semibold" style={{ fontFamily: "Poppins, sans-serif" }}>{s.value}</p>
+            <p className="text-[10px] text-white/80 mt-0.5">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="px-5 mt-5 pb-8 space-y-3">
+        {donations.map((d) => (
+          <div key={d.id} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex gap-3">
+            <Avatar name={d.recipient_name} />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <p className="font-medium text-gray-900 text-sm truncate" style={{ fontFamily: "Poppins, sans-serif" }}>{d.recipient_name}</p>
+                <StatusBadge status={d.status} />
+              </div>
+              <p className="text-xs text-gray-500 truncate mt-0.5">{d.diagnosis} · {d.hospital}</p>
+              <div className="flex items-center justify-between mt-1.5">
+                <p className="text-[11px] text-gray-400">{d.date} · {d.id}</p>
+                <p className="text-sm font-semibold text-green-600">{fmtINR(d.amount)}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProfilePage({ donor, onBack }) {
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState(donor);
+
+  const currentTierIdx = TIERS.findIndex((t) => t.name === donor.member_tier);
+  const nextTier = TIERS[currentTierIdx + 1] ?? TIERS[currentTierIdx];
+  const pct = Math.min(100, Math.round((donor.donation_points / nextTier.min) * 100));
+
+  return (
+    <div className="min-h-full bg-gray-50">
+      <BackHeader title="Profile" onBack={onBack} right={<button onClick={() => setEditing(true)}><FileText size={17} className="text-gray-500" /></button>} />
+      <div className="px-5 pt-6 flex flex-col items-center">
+        <div className="relative">
+          <div className="w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-semibold" style={{ background: `linear-gradient(135deg, ${BRAND}, ${BRAND_DARK})`, fontFamily: "Poppins, sans-serif" }}>
+            {donor.name.split(" ").map((w) => w[0]).join("")}
+          </div>
+          <div className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full border-2 border-gray-50 flex items-center justify-center shadow">
+            <Camera size={14} className="text-gray-500" />
+          </div>
+        </div>
+        <h2 className="mt-3 text-lg font-semibold text-gray-900" style={{ fontFamily: "Poppins, sans-serif" }}>{donor.name}</h2>
+        <span className="mt-1.5 flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full bg-violet-100 text-violet-700">
+          <Award size={12} /> {donor.member_tier}
+        </span>
+        <p className="text-xs text-gray-400 mt-1">Donor ID: {donor.donor_id}</p>
+      </div>
+
+      <div className="px-5 mt-6 space-y-3">
+        {[
+          { icon: Mail, label: "Email", value: donor.email },
+          { icon: Phone, label: "Mobile", value: donor.mobile },
+          { icon: Clock, label: "Total Donations", value: donor.total_donations },
+          { icon: Heart, label: "Total Amount", value: fmtINR(donor.total_amount) },
+          { icon: Award, label: "Donation Points", value: donor.donation_points },
+        ].map((row) => (
+          <div key={row.label} className="flex items-center gap-3 bg-white border border-gray-100 rounded-xl px-4 py-3">
+            <row.icon size={16} style={{ color: BRAND }} />
+            <div className="flex-1">
+              <p className="text-[11px] text-gray-400">{row.label}</p>
+              <p className="text-sm text-gray-800 font-medium">{row.value}</p>
+            </div>
+          </div>
+        ))}
+
+        <div className="rounded-2xl p-4 text-white" style={{ background: "linear-gradient(135deg,#7C3AED,#4C1D95)" }}>
+          <p className="text-xs text-white/80">Membership Progress</p>
+          <p className="text-sm font-semibold mt-0.5" style={{ fontFamily: "Poppins, sans-serif" }}>
+            Next: {nextTier.name}, {donor.donation_points.toLocaleString("en-IN")} / {nextTier.min.toLocaleString("en-IN")} Points
+          </p>
+          <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden mt-2.5">
+            <div className="h-full bg-white rounded-full" style={{ width: `${pct}%` }} />
+          </div>
+        </div>
+
+        <button onClick={() => setEditing(true)} className="w-full text-white text-sm font-medium py-3 rounded-xl mt-2 mb-8 transition active:scale-[0.98]" style={{ backgroundColor: BRAND }}>
+          Edit Profile
+        </button>
+      </div>
+
+      {editing && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-end">
+          <div className="bg-white w-full rounded-t-3xl p-5 animate-in slide-in-from-bottom">
+            <h3 className="font-semibold text-gray-900 mb-4" style={{ fontFamily: "Poppins, sans-serif" }}>Edit Profile</h3>
+            {["name", "email", "mobile"].map((f) => (
+              <div key={f} className="mb-3">
+                <label className="block text-xs text-gray-500 mb-1 capitalize">{f}</label>
+                <input
+                  value={form[f]}
+                  onChange={(e) => setForm({ ...form, [f]: e.target.value })}
+                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-red-300"
+                />
+              </div>
+            ))}
+            <div className="flex gap-2 mt-3">
+              <button onClick={() => { setForm(donor); setEditing(false); }} className="flex-1 py-2.5 rounded-xl text-sm font-medium text-gray-600 bg-gray-100">Cancel</button>
+              <button onClick={() => setEditing(false)} className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white" style={{ backgroundColor: BRAND }}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CasesPage({ cases, onBack, onDonate }) {
+  const [tab, setTab] = useState("all");
+  const tabs = [
+    { key: "all", label: "All" },
+    { key: "heart", label: "Heart Disease" },
+    { key: "cancer", label: "Cancer" },
+    { key: "kidney", label: "Kidney" },
+  ];
+  const [showFilter, setShowFilter] = useState(false);
+  const filtered = tab === "all" ? cases : cases.filter((c) => c.category === tab);
+
+  return (
+    <div className="min-h-full bg-gray-50">
+      <BackHeader title="Cases" onBack={onBack} right={<button onClick={() => setShowFilter(!showFilter)}><Filter size={17} className="text-gray-500" /></button>} />
+      <div className="px-5 pt-4 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+        {tabs.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition ${tab === t.key ? "text-white" : "bg-gray-100 text-gray-600"}`}
+            style={tab === t.key ? { backgroundColor: BRAND } : {}}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      {showFilter && (
+        <div className="px-5 pt-3 flex gap-2 flex-wrap">
+          {Object.entries(CATEGORY_META).map(([key, meta]) => (
+            <button key={key} onClick={() => { setTab(key); setShowFilter(false); }} className="px-3 py-1 rounded-full text-[11px] bg-white border border-gray-200 text-gray-600">
+              {meta.label}
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="px-5 mt-4 pb-8 space-y-3">
+        {filtered.length === 0 && <p className="text-sm text-gray-400 text-center py-10">No cases in this category yet.</p>}
+        {filtered.map((c) => <CaseCard key={c.id} c={c} onDonate={onDonate} />)}
+      </div>
+    </div>
+  );
+}
+
+function SearchPage({ cases, onBack, onDonate }) {
+  const [query, setQuery] = useState("");
+  const [visible, setVisible] = useState(4);
+
+  const results = useMemo(() => {
+    if (!query.trim()) return [];
+    const q = query.toLowerCase();
+    return cases.filter(
+      (c) => c.diagnosis.toLowerCase().includes(q) || c.hospital.toLowerCase().includes(q) || c.child_name.toLowerCase().includes(q)
+    );
+  }, [query, cases]);
+
+  return (
+    <div className="min-h-full bg-gray-50">
+      <BackHeader title="Search" onBack={onBack} right={<Clock size={17} className="text-gray-500" />} />
+      <div className="px-5 pt-4">
+        <div className="relative">
+          <SearchIcon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); setVisible(4); }}
+            placeholder="Search diseases or hospitals..."
+            className="w-full bg-white border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:border-red-300"
+          />
+        </div>
+      </div>
+
+      {!query.trim() ? (
+        <div className="px-5 mt-5 pb-8">
+          <p className="text-sm font-medium text-gray-700 mb-3" style={{ fontFamily: "Poppins, sans-serif" }}>Popular Diseases</p>
+          <div className="grid grid-cols-3 gap-3">
+            {POPULAR_DISEASES.map((d) => (
+              <button key={d.key} onClick={() => setQuery(d.label)} className={`rounded-2xl p-3 flex flex-col items-center gap-2 ${d.tint}`}>
+                <d.icon size={20} />
+                <span className="text-[10.5px] font-medium text-center leading-tight text-gray-700">{d.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="px-5 mt-4 pb-8 space-y-3">
+          <p className="text-xs text-gray-400">{results.length} result{results.length !== 1 ? "s" : ""}</p>
+          {results.slice(0, visible).map((c) => (
+            <div key={c.id} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+              <div className="flex gap-3">
+                <Avatar name={c.child_name} tint="bg-blue-50 text-blue-600" />
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900 text-sm truncate">{c.child_name}</p>
+                  <p className="text-xs text-gray-500 truncate">{c.diagnosis}</p>
+                  <p className="text-[11px] text-gray-400 truncate">{c.hospital}</p>
+                </div>
+              </div>
+              <div className="mt-3"><ProgressBar raised={c.raised_amount} goal={c.goal_amount} /></div>
+              <button onClick={() => onDonate(c)} className="mt-3 w-full text-white text-sm font-medium py-2 rounded-xl" style={{ backgroundColor: BRAND }}>Donate</button>
+            </div>
+          ))}
+          {results.length === 0 && <p className="text-sm text-gray-400 text-center py-10">No matches. Try another disease or hospital.</p>}
+          {visible < results.length && (
+            <button onClick={() => setVisible((v) => v + 4)} className="w-full text-sm font-medium py-2.5 rounded-xl border border-gray-200 text-gray-600">
+              View More Results
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function HospitalDashboard({ hospitalName, cases, onLogout, onRegister, onMenu }) {
+  const mine = cases.filter((c) => c.hospital.toLowerCase() === hospitalName.toLowerCase());
+  const totalRaised = mine.reduce((s, c) => s + c.raised_amount, 0);
+  const totalGoal = mine.reduce((s, c) => s + c.goal_amount, 0);
+
+  return (
+    <div className="min-h-full bg-gray-50">
+      <div className="px-5 py-4 text-white flex items-center justify-between" style={{ background: `linear-gradient(135deg, ${BRAND}, ${BRAND_DARK})` }}>
+        <div className="flex items-center gap-2 min-w-0">
+          <button onClick={onMenu} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 shrink-0"><Menu size={18} /></button>
+          <div className="min-w-0">
+            <p className="text-[10px] text-white/70">Hospital Portal</p>
+            <p className="font-semibold text-sm truncate" style={{ fontFamily: "Poppins, sans-serif" }}>{hospitalName || "Your Hospital"}</p>
+          </div>
+        </div>
+        <button onClick={onLogout} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10"><LogOut size={17} /></button>
+      </div>
+
+      <div className="px-5 pt-4 grid grid-cols-3 gap-2.5">
+        {[
+          { label: "Cases", value: mine.length },
+          { label: "Raised (₹)", value: totalRaised.toLocaleString("en-IN") },
+          { label: "Goal (₹)", value: totalGoal.toLocaleString("en-IN") },
+        ].map((s) => (
+          <div key={s.label} className="bg-white border border-gray-100 rounded-xl p-3 text-center shadow-sm">
+            <p className="text-base font-semibold text-gray-900" style={{ fontFamily: "Poppins, sans-serif" }}>{s.value}</p>
+            <p className="text-[10px] text-gray-400 mt-0.5">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="px-5 mt-5">
+        <button onClick={onRegister} className="w-full flex items-center justify-center gap-2 text-white text-sm font-medium py-3 rounded-xl transition active:scale-[0.98]" style={{ backgroundColor: BRAND }}>
+          <Plus size={16} /> Register New Case
+        </button>
+      </div>
+
+      <div className="px-5 mt-5 pb-8 space-y-3">
+        <p className="text-sm font-medium text-gray-700" style={{ fontFamily: "Poppins, sans-serif" }}>Registered Cases</p>
+        {mine.length === 0 && <p className="text-sm text-gray-400 text-center py-10">No cases registered yet. Add your first one above.</p>}
+        {mine.map((c) => <CaseCard key={c.id} c={c} />)}
+      </div>
+    </div>
+  );
+}
+
+function CaseRegistrationPage({ hospitalName, onBack, onSubmit }) {
+  const [form, setForm] = useState({
+    child_name: "", diagnosis: "", category: "heart", goal_amount: "", raised_amount: "0", days_left: "",
+  });
+  const [error, setError] = useState("");
+
+  const set = (k, v) => setForm({ ...form, [k]: v });
+
+  const submit = (e) => {
+    e.preventDefault();
+    if (!form.child_name || !form.diagnosis || !form.goal_amount || !form.days_left) {
+      return setError("Please fill in all required fields.");
+    }
+    setError("");
+    onSubmit({
+      id: "C-" + Math.floor(1000 + Math.random() * 9000),
+      child_name: form.child_name,
+      diagnosis: form.diagnosis,
+      hospital: hospitalName,
+      goal_amount: Number(form.goal_amount),
+      raised_amount: Number(form.raised_amount || 0),
+      days_left: Number(form.days_left),
+      category: form.category,
+    });
+  };
+
+  return (
+    <div className="min-h-full bg-gray-50">
+      <BackHeader title="Register New Case" onBack={onBack} right={null} />
+      <form onSubmit={submit} className="px-5 pt-5 pb-10 space-y-4">
+        <div>
+          <label className="block text-xs text-gray-500 mb-1.5">Child Name</label>
+          <input value={form.child_name} onChange={(e) => set("child_name", e.target.value)} className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-red-300" placeholder="e.g. Aarav Mehta" />
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1.5">Diagnosis</label>
+          <input value={form.diagnosis} onChange={(e) => set("diagnosis", e.target.value)} className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-red-300" placeholder="e.g. Congenital Heart Disease" />
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1.5">Hospital Name</label>
+          <input value={hospitalName} disabled className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm bg-gray-100 text-gray-500" />
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1.5">Category</label>
+          <select value={form.category} onChange={(e) => set("category", e.target.value)} className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-red-300 bg-white">
+            {Object.entries(CATEGORY_META).map(([k, m]) => <option key={k} value={k}>{m.label}</option>)}
+          </select>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1.5">Goal Amount (₹)</label>
+            <input type="number" value={form.goal_amount} onChange={(e) => set("goal_amount", e.target.value)} className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-red-300" placeholder="300000" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1.5">Raised Amount (₹)</label>
+            <input type="number" value={form.raised_amount} onChange={(e) => set("raised_amount", e.target.value)} className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-red-300" placeholder="0" />
+          </div>
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1.5">Days Left</label>
+          <input type="number" value={form.days_left} onChange={(e) => set("days_left", e.target.value)} className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-red-300" placeholder="30" />
+        </div>
+
+        {error && <p className="text-red-600 bg-red-50 border border-red-100 text-xs rounded-lg px-3 py-2">{error}</p>}
+
+        <button type="submit" className="w-full text-white text-sm font-medium py-3 rounded-xl transition active:scale-[0.98]" style={{ backgroundColor: BRAND }}>
+          Submit Case
+        </button>
+      </form>
+    </div>
+  );
+}
+
+/* ---------------------------------- App Root ---------------------------------- */
+
+export default function App() {
+  const [session, setSession] = useState(null); // {role:'donor'} | {role:'hospital', hospitalName}
+  const [view, setView] = useState("login");
+  const [navOpen, setNavOpen] = useState(false);
+  const [cases, setCases] = useState(INITIAL_CASES);
+  const [donor] = useState(INITIAL_DONOR);
+  const [toast, setToast] = useState("");
+  const [donateTarget, setDonateTarget] = useState(null);
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(""), 2600);
+  };
+
+  const goto = (v) => setView(v);
+
+  const handleDonorLogin = () => {
+    setSession({ role: "donor" });
+    setView("donorDashboard");
+  };
+  const handleHospitalLogin = (hospitalName) => {
+    setSession({ role: "hospital", hospitalName });
+    setView("hospitalDashboard");
+  };
+  const handleLogout = () => {
+    setSession(null);
+    setView("login");
+  };
+
+  const handleDonate = (c) => {
+    setDonateTarget(c);
+    showToast(`Thank you! Redirecting to donate to ${c.child_name}...`);
+  };
+
+  const registerCase = (newCase) => {
+    setCases((prev) => [newCase, ...prev]);
+    showToast("Case registered successfully!");
+    setView("hospitalDashboard");
+  };
+
+  // route guards
+  let content;
+  if (!session) {
+    if (view === "donorRegister") {
+      content = <DonorRegisterPage onBack={() => setView("login")} onRegistered={() => { handleDonorLogin(); showToast("Welcome to ChildLife!"); }} />;
+    } else {
+      content = <LoginPage onDonorLogin={handleDonorLogin} onHospitalLogin={handleHospitalLogin} onGoRegister={() => setView("donorRegister")} />;
+    }
+  } else if (session.role === "donor") {
+    switch (view) {
+      case "history":
+        content = <HistoryPage donor={donor} donations={DONATIONS} onBack={() => setView("donorDashboard")} />;
+        break;
+      case "profile":
+        content = <ProfilePage donor={donor} onBack={() => setView("donorDashboard")} />;
+        break;
+      case "cases":
+        content = <CasesPage cases={cases} onBack={() => setView("donorDashboard")} onDonate={handleDonate} />;
+        break;
+      case "search":
+        content = <SearchPage cases={cases} onBack={() => setView("donorDashboard")} onDonate={handleDonate} />;
+        break;
+      default:
+        content = <DonorDashboard donor={donor} onMenu={() => setNavOpen(true)} onNavigate={goto} />;
+    }
+  } else if (session.role === "hospital") {
+    if (view === "caseRegistration") {
+      content = <CaseRegistrationPage hospitalName={session.hospitalName} onBack={() => setView("hospitalDashboard")} onSubmit={registerCase} />;
+    } else {
+      content = (
+        <HospitalDashboard
+          hospitalName={session.hospitalName}
+          cases={cases}
+          onLogout={handleLogout}
+          onRegister={() => setView("caseRegistration")}
+          onMenu={() => setNavOpen(true)}
+        />
+      );
+    }
+  }
+
+  return (
+    <div className="min-h-screen w-full flex items-center justify-center bg-gray-200 p-0 sm:p-6" style={{ fontFamily: "Poppins, sans-serif" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Dancing+Script:wght@600&display=swap');
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+      <div className="w-full max-w-md sm:min-h-[860px] min-h-screen bg-white sm:rounded-[2rem] overflow-hidden shadow-2xl relative">
+        {session && (
+          <NavDrawer
+            open={navOpen}
+            onClose={() => setNavOpen(false)}
+            onNavigate={goto}
+            onLogout={handleLogout}
+            role={session.role}
+          />
+        )}
+        {content}
+        <Toast message={toast} show={!!toast} />
+      </div>
+    </div>
+  );
+}
