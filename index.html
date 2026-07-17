@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ChildLife — Save Little Lives</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<div class="phone-frame">
+
+  <!-- ============ STATUS BAR (shared) ============ -->
+  <template id="status-bar-tpl">
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <span class="icons">📶 📡 🔋</span>
+    </div>
+  </template>
+
+  <!-- ============ LOGIN SCREEN ============ -->
+  <section class="screen active" id="login-screen">
+    <div class="login-bg-decor">
+      <span class="heart" style="top:8%;left:12%;">❤</span>
+      <span class="plus" style="top:14%;right:18%;">✚</span>
+      <span class="heart" style="top:22%;right:8%;font-size:18px;">❤</span>
+      <span class="ekg" style="top:40%;left:-10px;">🩺</span>
+      <span class="plus" style="top:55%;left:10%;">✚</span>
+      <span class="heart" style="top:62%;right:12%;font-size:20px;">❤</span>
+      <span class="plus" style="top:75%;right:22%;">✚</span>
+      <span class="heart" style="top:84%;left:16%;font-size:16px;">❤</span>
+    </div>
+
+    <div class="login-header">
+      <div class="login-logo-circle">❤️‍🩹</div>
+      <h1>ChildLife</h1>
+      <p>Save Little Lives</p>
+    </div>
+
+    <div style="text-align:center;position:relative;z-index:2;margin:18px 0 6px;">
+      <div style="color:#fff;font-size:15px;font-weight:700;">Hope Begins With You</div>
+      <div style="color:rgba(255,255,255,0.6);font-size:12px;margin-top:4px;">Your little help can bring big smiles.</div>
+    </div>
+
+    <div class="login-body">
+      <!-- Donor Login -->
+      <div class="login-card">
+        <div class="login-card-head">
+          <div class="icon-circle">👤</div>
+          <div>
+            <h3>Donor Login</h3>
+            <p>Welcome back! Please login to continue</p>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Email or Phone Number</label>
+          <input class="field-input" type="text" placeholder="priya@gmail.com" value="priya@gmail.com">
+        </div>
+        <div class="field-group">
+          <label>Password</label>
+          <input class="field-input" type="password" placeholder="••••••••" value="donor123">
+        </div>
+        <div class="login-row">
+          <label><input type="checkbox" checked> Remember me</label>
+          <a href="#">Forgot Password?</a>
+        </div>
+        <button class="btn-primary" onclick="go('donor-home')">🔒 Login</button>
+        <div class="login-or">OR</div>
+        <button class="btn-secondary" onclick="alert('Registration form would open here')">👤 New Donor? Register</button>
+      </div>
+
+      <!-- Hospital Login -->
+      <div class="login-card">
+        <div class="login-card-head">
+          <div class="icon-circle">🏥</div>
+          <div>
+            <h3>Hospital Login</h3>
+            <p>Secure Access for Hospitals Only</p>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Hospital Name</label>
+          <input class="field-input" type="text" placeholder="Govt. General Hospital" value="Govt. General Hospital">
+        </div>
+        <div class="field-group">
+          <label>Password</label>
+          <input class="field-input" type="password" placeholder="••••••••" value="hospital123">
+        </div>
+        <button class="btn-primary" onclick="go('hosp-home')">🔒 Login</button>
+        <div class="login-note"><b>Authorized Hospitals Only</b><br>Your data is safe with us.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DONOR HOME ============ -->
+  <section class="screen" id="donor-home">
+    <div class="app-header">
+      <div class="top-row">
+        <div class="logo-mini"><span class="logo-icon">❤️‍🩹</span> ChildLife</div>
+        <span class="header-bell">🔔</span>
+      </div>
+      <div class="welcome-text">
+        <h2>Welcome Donor! 👋</h2>
+        <p>Hope Begins With You ♡</p>
+      </div>
+    </div>
+
+    <div class="home-content">
+      <div class="greeting-card">
+        <div class="emoji">💛</div>
+        <p>Your little help can bring big smiles</p>
+        <div class="tagline">Together we've saved 120+ children</div>
+      </div>
+
+      <div class="tiles-grid">
+        <div class="tile" onclick="go('donor-dashboard')">
+          <div class="tile-icon red">💸</div>
+          <div class="tile-name">Donate<br>Transaction History</div>
+        </div>
+        <div class="tile" onclick="go('donor-profile')">
+          <div class="tile-icon pink">👤</div>
+          <div class="tile-name">Profile</div>
+        </div>
+        <div class="tile" onclick="go('donor-cases')">
+          <div class="tile-icon red">🧒</div>
+          <div class="tile-name">Cases</div>
+        </div>
+        <div class="tile" onclick="go('donor-search')">
+          <div class="tile-icon pink">🔍</div>
+          <div class="tile-name">Search</div>
+        </div>
+      </div>
+
+      <div class="impact-card">
+        <h4>📊 Your Impact</h4>
+        <div class="impact-stats">
+          <div><div class="stat-num">32</div><div class="stat-lbl">Donations</div></div>
+          <div><div class="stat-num">₹48.7K</div><div class="stat-lbl">Contributed</div></div>
+          <div><div class="stat-num">1250</div><div class="stat-lbl">Points</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="nav-donor-home"></div>
+  </section>
+
+  <!-- ============ DONOR DASHBOARD (Transaction History) ============ -->
+  <section class="screen" id="donor-dashboard">
+    <div class="page-header">
+      <span class="back-btn" onclick="go('donor-home')">‹</span>
+      <h3>Transaction History</h3>
+      <span class="header-action" onclick="alert('Filter options')">⚙</span>
+    </div>
+
+    <div class="page-body">
+      <div class="stats-row">
+        <div class="stat-box"><div class="num">32</div><div class="lbl">Total<br>Donations</div></div>
+        <div class="stat-box"><div class="num">₹48.7K</div><div class="lbl">Total<br>Amount</div></div>
+        <div class="stat-box"><div class="num">1,250</div><div class="lbl">Donation<br>Points</div></div>
+      </div>
+
+      <div class="search-bar-dark">
+        <span class="s-icon">🔍</span>
+        <input type="text" id="txn-search" placeholder="Search transactions..." oninput="filterTxn()">
+      </div>
+
+      <div class="section-title">📋 All Transactions <span style="font-size:11px;color:#aaa;font-weight:400;margin-left:auto;">Showing all</span></div>
+
+      <div id="txn-list"></div>
+    </div>
+
+    <div id="nav-donor-dashboard"></div>
+  </section>
+
+  <!-- ============ DONOR PROFILE ============ -->
+  <section class="screen" id="donor-profile">
+    <div class="profile-header">
+      <div class="profile-avatar">👩</div>
+      <div class="profile-name">Priya R.</div>
+      <div class="member-badge">💎 Diamond Member</div>
+    </div>
+
+    <div class="page-body" style="margin-top:0;">
+      <div class="profile-stats">
+        <div class="ps"><div class="n">32</div><div class="l">Donations</div></div>
+        <div class="ps"><div class="n">₹48,750</div><div class="l">Amount</div></div>
+        <div class="ps"><div class="n">1,250</div><div class="l">Points</div></div>
+      </div>
+
+      <div class="upgrade-card">
+        <div class="upg-title">🏆 Next: Platinum Hero</div>
+        <div class="upg-sub">750 more points to unlock Platinum tier</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:62%;"></div></div>
+        <div class="upg-pct">1,250 / 2,000 pts · 62%</div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-row"><span class="lbl">🆔 Donor ID</span><span class="val">DONDHD2580</span></div>
+        <div class="info-row"><span class="lbl">✉️ Email</span><span class="val">priya@gmail.com</span></div>
+        <div class="info-row"><span class="lbl">📱 Mobile</span><span class="val">+91 98765-53210</span></div>
+        <div class="info-row"><span class="lbl">🎂 Member Since</span><span class="val">Jan 2024</span></div>
+        <div class="info-row"><span class="lbl">🏅 Tier</span><span class="val">Diamond</span></div>
+      </div>
+
+      <button class="btn-primary" onclick="alert('Edit profile form would open here')">✏️ Edit Profile</button>
+    </div>
+
+    <div id="nav-donor-profile"></div>
+  </section>
+
+  <!-- ============ DONOR CASES ============ -->
+  <section class="screen" id="donor-cases">
+    <div class="page-header">
+      <span class="back-btn" onclick="go('donor-home')">‹</span>
+      <h3>Children Needing Help</h3>
+      <span class="header-action" onclick="toggleFilters()">⚙</span>
+    </div>
+
+    <div class="page-body">
+      <div class="search-bar-dark">
+        <span class="s-icon">🔍</span>
+        <input type="text" placeholder="Search by child name..." oninput="filterCases(this.value)">
+      </div>
+
+      <div class="filter-pills">
+        <div class="pill active" onclick="filterByDisease(this,'All')">All</div>
+        <div class="pill" onclick="filterByDisease(this,'Heart Disease')">Heart Disease</div>
+        <div class="pill" onclick="filterByDisease(this,'Cancer')">Cancer</div>
+        <div class="pill" onclick="filterByDisease(this,'Kidney')">Kidney</div>
+        <div class="pill" onclick="filterByDisease(this,'Liver')">Liver</div>
+        <div class="pill" onclick="filterByDisease(this,'Thalassemia')">Thalassemia</div>
+      </div>
+
+      <div id="cases-list"></div>
+    </div>
+
+    <div id="nav-donor-cases"></div>
+  </section>
+
+  <!-- ============ DONOR SEARCH ============ -->
+  <section class="screen" id="donor-search">
+    <div class="page-header">
+      <span class="back-btn" onclick="go('donor-home')">‹</span>
+      <h3>Search</h3>
+    </div>
+
+    <div class="page-body">
+      <div class="search-bar-dark">
+        <span class="s-icon">🔍</span>
+        <input type="text" id="disease-search" placeholder="Search diseases or hospitals..." oninput="runSearch()">
+      </div>
+
+      <div id="search-default">
+        <div class="section-title">🩺 Popular Diseases</div>
+        <div class="disease-grid" id="disease-grid"></div>
+
+        <div class="section-title">📰 Recent Searches</div>
+        <div id="recent-searches"></div>
+      </div>
+
+      <div id="search-results" style="display:none;">
+        <div class="section-title">🔎 Matching Cases</div>
+        <div id="search-results-list"></div>
+        <div class="view-more" onclick="alert('Loading more results...')">View More Results →</div>
+      </div>
+    </div>
+
+    <div id="nav-donor-search"></div>
+  </section>
+
+  <!-- ============ HOSPITAL HOME ============ -->
+  <section class="screen" id="hosp-home">
+    <div class="hosp-header">
+      <div class="top"><span style="font-size:24px;">❤️‍🩹</span> ChildLife</div>
+      <h2>Welcome,<br>Govt. General Hospital</h2>
+      <p>Good Morning! How can we help today?</p>
+    </div>
+
+    <div class="hosp-content">
+      <div class="hosp-tiles">
+        <div class="hosp-tile" onclick="go('hosp-register')">
+          <div class="ht-icon">📝</div>
+          <div class="ht-name">Case<br>Registration</div>
+        </div>
+        <div class="hosp-tile" onclick="go('hosp-profile')">
+          <div class="ht-icon">🏥</div>
+          <div class="ht-name">Profile</div>
+        </div>
+      </div>
+
+      <div class="hosp-art">
+        <div class="big-heart">❤️‍🩹</div>
+        <p style="color:var(--gray);font-size:13px;margin-top:8px;">Saving little lives, together</p>
+      </div>
+    </div>
+
+    <div id="nav-hosp-home"></div>
+  </section>
+
+  <!-- ============ HOSPITAL CASE REGISTRATION (Wizard) ============ -->
+  <section class="screen" id="hosp-register">
+    <div class="page-header">
+      <span class="back-btn" onclick="go('hosp-home')">‹</span>
+      <h3>Case Registration</h3>
+    </div>
+
+    <div class="wizard-steps">
+      <div class="wstep active" id="ws1"></div>
+      <div class="wstep" id="ws2"></div>
+      <div class="wstep" id="ws3"></div>
+    </div>
+    <div class="wizard-label">Step <b id="step-num">1</b> of 3 · <span id="step-name">Patient Details</span></div>
+
+    <div class="page-body">
+      <!-- Step 1 -->
+      <div id="wizard-1">
+        <div class="form-section-title">👤 Patient Details</div>
+        <div class="field">
+          <label>Patient Name</label>
+          <input type="text" id="p-name" placeholder="Enter patient name" value="R. Karthik">
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Age</label><input type="number" id="p-age" placeholder="Years" value="8"></div>
+          <div class="field"><label>Gender</label>
+            <select id="p-gender"><option>Male</option><option>Female</option><option>Other</option></select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Primary Condition</label>
+          <input type="text" id="p-condition" placeholder="e.g. Congenital Heart Disease" value="Congenital Heart Disease">
+        </div>
+        <div class="field">
+          <label>Medical Documents</label>
+          <div class="upload-box"><div class="up-icon">📎</div>Tap to upload medical files<br><span style="font-size:11px;">PDF, JPG, PNG (max 10MB)</span></div>
+        </div>
+        <div class="wizard-nav">
+          <button class="btn-primary" onclick="goStep(2)">Next →</button>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div id="wizard-2" style="display:none;">
+        <div class="form-section-title">💊 Treatment Details</div>
+        <div class="field">
+          <label>Treatment Type</label>
+          <input type="text" id="p-treatment" placeholder="e.g. Heart Surgery" value="Heart Surgery">
+        </div>
+        <div class="field">
+          <label>Estimated Cost (₹)</label>
+          <input type="number" id="p-cost" placeholder="Enter amount" value="250000">
+        </div>
+        <div class="field">
+          <label>Hospital Department</label>
+          <select id="p-dept">
+            <option>Cardiology</option><option>Nephrology</option><option>Oncology</option>
+            <option>Hepatology</option><option>Neurology</option><option>Pulmonology</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Remarks (Optional)</label>
+          <textarea id="p-remarks" rows="3" placeholder="Any additional notes..."></textarea>
+        </div>
+        <div class="wizard-nav">
+          <button class="btn-outline" onclick="goStep(1)">← Back</button>
+          <button class="btn-primary" onclick="goStep(3)">Next →</button>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div id="wizard-3" style="display:none;">
+        <div class="form-section-title">✅ Review & Submit</div>
+        <div class="review-card">
+          <div class="review-row"><span class="rl">Patient Name</span><span class="rv" id="r-name">R. Karthik</span></div>
+          <div class="review-row"><span class="rl">Age / Gender</span><span class="rv" id="r-agegender">8 Years / Male</span></div>
+          <div class="review-row"><span class="rl">Disease</span><span class="rv" id="r-disease">Congenital Heart Disease</span></div>
+          <div class="review-row"><span class="rl">Treatment</span><span class="rv" id="r-treatment">Heart Surgery</span></div>
+          <div class="review-row"><span class="rl">Est. Cost</span><span class="rv" id="r-cost">₹ 2,50,000</span></div>
+          <div class="review-row"><span class="rl">Department</span><span class="rv" id="r-dept">Cardiology</span></div>
+          <div class="review-row"><span class="rl">Documents</span><span class="rv">2 Files Uploaded</span></div>
+          <div class="review-row"><span class="rl">Remarks</span><span class="rv" id="r-remarks">-</span></div>
+        </div>
+        <div class="wizard-nav">
+          <button class="btn-outline" onclick="goStep(2)">← Back</button>
+          <button class="btn-primary" onclick="submitCase()">Submit ✓</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="nav-hosp-register"></div>
+  </section>
+
+  <!-- ============ HOSPITAL PROFILE + CASE HISTORY ============ -->
+  <section class="screen" id="hosp-profile">
+    <div class="hosp-profile-head">
+      <div class="hp-icon">🏥</div>
+      <h3>Govt. General Hospital</h3>
+      <p>Hospital ID: HOSPI2345</p>
+    </div>
+
+    <div class="page-body">
+      <div class="section-title">📁 Case History</div>
+      <div id="history-list"></div>
+    </div>
+
+    <div id="nav-hosp-profile"></div>
+  </section>
+
+  <!-- ============ HOSPITAL CASE DETAILS ============ -->
+  <section class="screen" id="hosp-case-detail">
+    <div class="detail-hero">
+      <div class="page-header" style="background:transparent;padding:14px 12px 0;">
+        <span class="back-btn" onclick="go('hosp-profile')">‹</span>
+        <h3>Case Details</h3>
+      </div>
+      <div class="detail-status-bar" style="padding:10px 0;">
+        <span class="ds-name" id="cd-name">R. Karthik</span>
+        <span class="badge-lg" style="background:rgba(255,255,255,0.25);color:#fff;" id="cd-status">Approved</span>
+      </div>
+      <div class="detail-amount">
+        <div class="da-lbl">Estimated Cost</div>
+        <div class="da-val" id="cd-cost">₹ 2,50,000</div>
+        <div class="da-date" id="cd-date">Reg. Date: 12 Jul 2025</div>
+      </div>
+    </div>
+
+    <div class="detail-body">
+      <h4>📋 Case Information</h4>
+      <div class="detail-row"><span class="dr-l">Patient Name</span><span class="dr-r" id="cd-pname">R. Karthik</span></div>
+      <div class="detail-row"><span class="dr-l">Age / Gender</span><span class="dr-r" id="cd-agegender">8 Years / Male</span></div>
+      <div class="detail-row"><span class="dr-l">Disease</span><span class="dr-r" id="cd-disease">Congenital Heart Disease</span></div>
+      <div class="detail-row"><span class="dr-l">Treatment Type</span><span class="dr-r" id="cd-treatment">Heart Surgery</span></div>
+      <div class="detail-row"><span class="dr-l">Department</span><span class="dr-r" id="cd-dept">Cardiology</span></div>
+      <div class="detail-row"><span class="dr-l">Status</span><span class="dr-r" id="cd-status2">Approved</span></div>
+      <div class="detail-row"><span class="dr-l">Medical Documents</span><span class="dr-r">2 Files Uploaded</span></div>
+      <div class="detail-row"><span class="dr-l">Remarks</span><span class="dr-r">-</span></div>
+      <button class="btn-doc" onclick="alert('Opening documents...')">📄 View Documents</button>
+    </div>
+
+    <div id="nav-hosp-detail"></div>
+  </section>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
